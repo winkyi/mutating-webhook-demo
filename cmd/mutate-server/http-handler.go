@@ -15,7 +15,7 @@ const (
 	jsonContentType = `application/json`
 )
 
-type admitFunc func(*admission.AdmissionRequest, *SidecarConfig, map[string]string) ([]patchOperation, error)
+type admitFunc func(*admission.AdmissionRequest, map[string]string) ([]patchOperation, error)
 
 type patchOperation struct {
 	Op    string      `json:"op"`
@@ -106,7 +106,7 @@ func doServeAdmitFunc(w http.ResponseWriter, r *http.Request, admit admitFunc) (
 	if !isKubeNamespace(admissionReviewReq.Request.Namespace) {
 		annotations := make(map[string]string)
 		annotations["sidecar.winkyi"] = "hello"
-		patchOps, err = admit(admissionReviewReq.Request, sidecarConfig, annotations)
+		patchOps, err = admit(admissionReviewReq.Request, annotations)
 	}
 
 	if err != nil {

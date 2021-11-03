@@ -72,12 +72,13 @@ func initSidecarConfig() *SidecarConfig {
 	}
 }
 
-func addNginxSidecar(req *admission.AdmissionRequest, config *SidecarConfig, annotations map[string]string) ([]patchOperation, error) {
+func addNginxSidecar(req *admission.AdmissionRequest, annotations map[string]string) ([]patchOperation, error) {
 	if req.Resource != podResource {
 		log.Printf("expect resource to be %s", podResource)
 		return nil, nil
 	}
 
+	config := initSidecarConfig()
 	// 解析pod
 	raw := req.Object.Raw
 	pod := corev1.Pod{}
@@ -93,6 +94,7 @@ func addNginxSidecar(req *admission.AdmissionRequest, config *SidecarConfig, ann
 
 func addContainer(target, added []corev1.Container, basePath string) (patch []patchOperation) {
 	first := len(target) == 0
+	log.Println("add:", added)
 	var value interface{}
 	for _, add := range added {
 		value = add
@@ -103,12 +105,15 @@ func addContainer(target, added []corev1.Container, basePath string) (patch []pa
 		} else {
 			path = path + "/-"
 		}
+		log.Println("path:", path)
 		patch = append(patch, patchOperation{
 			Op:    "add",
 			Path:  path,
 			Value: value,
 		})
 	}
+
+	log.Println("value:", value)
 	return patch
 }
 

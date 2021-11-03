@@ -7,11 +7,6 @@ import (
 	"net/http"
 )
 
-var (
-	sidecarConfig *SidecarConfig
-	sidecarError  error
-)
-
 func main() {
 	// 定义参数
 	var parameters WebHookParameters
@@ -26,10 +21,6 @@ func main() {
 	//	log.Println("读取sidecar配置文件失败")
 	//	panic(sidecarError)
 	//}
-
-	sidecarConfig := initSidecarConfig()
-
-	log.Println(sidecarConfig)
 
 	mux := http.NewServeMux()
 	mux.Handle("/mutate", admitFuncHandler(addNginxSidecar))
