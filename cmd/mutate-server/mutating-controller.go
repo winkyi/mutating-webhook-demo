@@ -29,7 +29,7 @@ type WebHookParameters struct {
 // SidecarConfig 配置文件
 type SidecarConfig struct {
 	Containers []corev1.Container `yaml:"containers"`
-	Volumes    []corev1.Volume    `yaml:"volumes"`
+	//Volumes    []corev1.Volume    `yaml:"volumes"`
 }
 
 // WebhookServer
@@ -54,6 +54,24 @@ func loadSidecarConfig(sidecarfile string) (*SidecarConfig, error) {
 	return &sidecarConfig, nil
 }
 
+func initSidecarConfig() *SidecarConfig {
+	return &SidecarConfig{
+		Containers: []corev1.Container{
+			{
+				Name:  "nginx-sidecar",
+				Image: "nginx:1.12.2",
+				Ports: []corev1.ContainerPort{
+					{
+						Name:          "nginxPort",
+						ContainerPort: 80,
+						Protocol:      "tcp",
+					},
+				},
+			},
+		},
+	}
+}
+
 func addNginxSidecar(req *admission.AdmissionRequest, config *SidecarConfig, annotations map[string]string) ([]patchOperation, error) {
 	if req.Resource != podResource {
 		log.Printf("expect resource to be %s", podResource)
@@ -68,7 +86,7 @@ func addNginxSidecar(req *admission.AdmissionRequest, config *SidecarConfig, ann
 	}
 	var patches []patchOperation
 	patches = append(patches, addContainer(pod.Spec.Containers, config.Containers, "/spec/containers")...)
-	patches = append(patches, addVolume(pod.Spec.Volumes, config.Volumes, "/spec/volumes")...)
+	//patches = append(patches, addVolume(pod.Spec.Volumes, config.Volumes, "/spec/volumes")...)
 	patches = append(patches, updateAnnotation(pod.Annotations, annotations)...)
 	return patches, nil
 }
